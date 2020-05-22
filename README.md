@@ -17,3 +17,6 @@
      
 5.没登录请求会被拦截
      <div align=center><img src="https://s1.ax1x.com/2020/05/22/YXq2ZT.png"/></div>
+     
+5.乱写一个请求，弹出404页面（感觉是springboot做的最方便的东西，只要在templates/error写对应的错误码.html就好了）
+     <div align=center><img src="https://s1.ax1x.com/2020/05/22/YXLCOP.png"/></div>
