@@ -1,9 +1,9 @@
 package com.huang.controller;
 
-import com.huang.dao.DepartmentDao;
-import com.huang.dao.EmployeeDao;
 import com.huang.pojo.Department;
 import com.huang.pojo.Employee;
+import com.huang.service.DepartmentService;
+import com.huang.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,13 +17,13 @@ import java.util.Collection;
 @Controller
 public class EmployeeController {
     @Autowired
-    private EmployeeDao employeeDao;
+    private EmployeeService employeeService;
     @Autowired
-    private DepartmentDao departmentDao;
+    private DepartmentService departmentService;
 
     @RequestMapping("/emps")
     public String list(Model model){
-        Collection<Employee> employees = employeeDao.getAll();
+        Collection<Employee> employees = employeeService.selectAllEmployee();
         model.addAttribute("emps",employees);
         return "emp/list";
     }
@@ -31,7 +31,7 @@ public class EmployeeController {
     @GetMapping("/emp")
     public String toAdd(Model model){
         //查出部门的信息
-        Collection<Department> departments = departmentDao.getDepartments();
+        Collection<Department> departments = departmentService.selectAllDepartment();
         model.addAttribute("departments",departments);
         return "emp/add";
     }
@@ -39,16 +39,18 @@ public class EmployeeController {
     @PostMapping("/emp")
     public String addEmp(Employee employee){
         System.out.println("addEmp:"+ employee);
-        employeeDao.save(employee);
+        employeeService.addEmployee(employee);
         return "redirect:/emps";
     }
 
     //去到员工的修改页面
     @GetMapping("/emp/{id}")
     public String toUpdateEmp(@PathVariable("id")Integer id,Model model){
-        Employee employee = employeeDao.getEmployeeById(id);
+
+        Employee employee = employeeService.selectEmployeeById(id);
         model.addAttribute("emp",employee);
-        Collection<Department> departments = departmentDao.getDepartments();
+
+        Collection<Department> departments = departmentService.selectAllDepartment();
         model.addAttribute("departments",departments);
         return "emp/update";
     }
@@ -56,13 +58,14 @@ public class EmployeeController {
     @PostMapping("/updateEmp")
     public String updateEmp(Employee employee){
         System.out.println("updateEmp:" + employee);
-        employeeDao.save(employee);
+
+        employeeService.updateEmployee(employee);
         return "redirect:/emps";
     }
 
     @GetMapping("/delete/{id}")
     public String toDeteleEmp(@PathVariable("id")Integer id){
-        employeeDao.delete(id);
+        employeeService.deleteEmployee(id);
         return "redirect:/emps";
     }
 }
