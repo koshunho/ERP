@@ -35,12 +35,20 @@ public class ShiroConfig {
         filterChaindefinitionMap.put("/js/**","anon");
         filterChaindefinitionMap.put("/img/**","anon");
         filterChaindefinitionMap.put("/user/login","anon");
+
+        //需要admin角色
+        //参数可写多个，表示是某个或某些角色才能通过，多个参数时写 roles["admin，user"]，当有多个参数时必须每个参数都通过才算通过
+        filterChaindefinitionMap.put("/emp/**","roles[admin]");
+        filterChaindefinitionMap.put("/updateEmp","roles[admin]");
+        filterChaindefinitionMap.put("/delete/**","roles[admin]");
+
         filterChaindefinitionMap.put("/user/logout","logout");
         filterChaindefinitionMap.put("/**","authc");
 
         bean.setFilterChainDefinitionMap(filterChaindefinitionMap);
 
         bean.setLoginUrl("/index.html");
+        bean.setUnauthorizedUrl("/notRole");
         //bean.setSuccessUrl("/user/login");
         return bean;
     }

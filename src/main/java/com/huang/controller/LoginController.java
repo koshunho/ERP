@@ -57,4 +57,9 @@ public class LoginController {
         session.invalidate();
         return "redirect:/index.html";
     }
+
+    @RequestMapping("/notRole")
+    public String unauthorized(){
+        return "error/401";
+    }
 }
