@@ -1,22 +1,100 @@
 # ERP
-简单的ERP系统，Spring Boot + Thymeleaf，为了测试方便没有使用数据库。commons文件夹是页面复用，提取了标题栏和侧边栏
+删除了之前的拦截器，整合了shiro。
 
-### 效果预览
+### 总结
+创建一个shiro的配置类ShiroConfig
 
-1.登录界面。用户名随便填，密码123456
-     <div align=center><img src="https://s1.ax1x.com/2020/05/22/YX74JA.png"/></div>
+#### 第一步：创建Realm对象，需要自定义
+```Java
+    @Bean
+    public UserRealm userRealm(){
+        return new UserRealm();
+    }
+```
+用户的授权和认证就在UserRealm里
+```Java
+public class UserRealm extends AuthorizingRealm {
+    @Autowired
+    private UserService userService;
+    //授权
+    @Override
+    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {  
+        return null;
+    }
 
-2.员工管理页面
-     <div align=center><img src="https://s1.ax1x.com/2020/05/22/YXqMIe.png"/></div>
-     
-3.点击编辑，页面回显
-     <div align=center><img src="https://s1.ax1x.com/2020/05/22/YXqtqf.png"/></div>
+    //认证
+    @Override
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        return null;
+    }
+}
+```
+#### 第二步：DefaultWebSecurityManager
+```java
+    @Bean(name="defaultWebSecurityManager")
+    public DefaultWebSecurityManager getDefaultWebSecurityManager(@Qualifier("userRealm")UserRealm userRealm){
+        DefaultWebSecurityManager defaultWebsecurityManager = new DefaultWebSecurityManager();
+        defaultWebsecurityManager.setRealm(userRealm);
+        return defaultWebsecurityManager;
+    }
+```
 
-4.首页国际化
-     <div align=center><img src="https://s1.ax1x.com/2020/05/22/YXq0iQ.png"/></div>
-     
-5.没登录请求会被拦截
-     <div align=center><img src="https://s1.ax1x.com/2020/05/22/YXq2ZT.png"/></div>
-     
-5.乱写一个请求，弹出404页面（感觉是springboot做的最方便的东西，只要在templates/error写对应的错误码.html就好了）
-     <div align=center><img src="https://s1.ax1x.com/2020/05/22/YXLCOP.png"/></div>
+#### 第三步：ShiroFilterFactoryBean
+```java
+    @Bean
+    public ShiroFilterFactoryBean shiroFilterFactoryBean(@Qualifier("defaultWebSecurityManager") DefaultWebSecurityManager defaultWebSecurityManager){
+        ShiroFilterFactoryBean bean = new ShiroFilterFactoryBean();
+        //设置安全管理器
+        bean.setSecurityManager(defaultWebSecurityManager);
+
+        //添加shiro的内置过滤器
+        /*
+            anon:无须认证就可以访问
+            authc:必须认证了才能访问
+            user:必须拥有 记住我 功能才能用
+            perms： 拥有对某个资源的权限才能访问
+            role:拥有某个角色权限才能访问
+        */
+        Map<String,String> filterChaindefinitionMap = new LinkedHashMap<>();
+        //过滤器规则，从上而下顺序执行，将/**放在最后
+        //配置匿名可访问页面和静态文件
+        filterChaindefinitionMap.put("/index.html","anon");
+        filterChaindefinitionMap.put("/","anon");
+        filterChaindefinitionMap.put("/css/**","anon");
+        filterChaindefinitionMap.put("/js/**","anon");
+        filterChaindefinitionMap.put("/img/**","anon");
+        filterChaindefinitionMap.put("/user/login","anon");
+        filterChaindefinitionMap.put("/user/logout","logout");
+        filterChaindefinitionMap.put("/**","authc");
+
+        bean.setFilterChainDefinitionMap(filterChaindefinitionMap);
+
+        bean.setLoginUrl("/index.html");
+        //bean.setSuccessUrl("/user/login");
+        return bean;
+    }
+```
+
+### 在LoginController中就用token来验证用户了
+```java
+    @RequestMapping("/user/login")
+    public String login(@RequestParam("username") String username, @RequestParam("password") String password, Model model, HttpSession session){
+        //User user = userService.selectUserByName(username, password);
+
+        Subject subject = SecurityUtils.getSubject();
+
+        UsernamePasswordToken token = new UsernamePasswordToken(username, password);
+
+        try{
+            subject.login(token);
+            session.setAttribute("loginUser",username);
+            return "redirect:/main.html";
+        }catch (UnknownAccountException e){
+            model.addAttribute("msg","用户名错误！");
+            return "index";
+        }catch(IncorrectCredentialsException e){
+            model.addAttribute("msg","密码错误！");
+            return "index";
+        }
+```
+token是相当于全局的，都能取得到。（？）
