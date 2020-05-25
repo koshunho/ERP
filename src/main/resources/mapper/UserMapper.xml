@@ -6,4 +6,10 @@
     <select id="selectUserByName" resultType="User">
         select * from springboot.user where username = #{username} and password = #{password}
     </select>
+
+    <select id="selectUserByShiro" resultType="user">
+        select *
+        from springboot.user where username = #{username};
+    </select>
+
 </mapper>

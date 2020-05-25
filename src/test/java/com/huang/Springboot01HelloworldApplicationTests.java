@@ -92,4 +92,9 @@ class Springboot01HelloworldApplicationTests {
             System.out.println(department);
         }
     }
+
+    @Test
+    public void test7(){
+        System.out.println(userService.selectUserByShiro("admin"));
+    }
 }

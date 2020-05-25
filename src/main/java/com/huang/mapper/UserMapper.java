@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserMapper {
     User selectUserByName(@Param("username")String username, @Param("password")String password);
+
+    User selectUserByShiro(@Param("username")String username);
 }
