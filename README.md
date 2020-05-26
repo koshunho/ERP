@@ -191,7 +191,31 @@ filterChaindefinitionMap.put("/emp/**","roles[admin]");
 但是点击 添加、编辑、删除 的话。。。就弹出自己设置的页面
 <div align=center><img src="https://s1.ax1x.com/2020/05/26/tPkJk6.png"/></div>
 
+### Shiro整合thymeleaf
+要是身份是user的话，添加、编辑、删除 按钮就根本不应该出现
+
+1.导入一个thymeleaf-extras-shiro包。
+
+2.在ShiroConfig中配置
+```java
+    //ShiroDialect：用来整合shiro 和 thymeleaf
+    @Bean
+    public ShiroDialect shiroDialect(){
+        return new ShiroDialect();
+    }
+```
+
+3.修改网页
+首先导入命名空间xmlns:shiro="http://www.pollix.at/thymeleaf/shiro"
+```html
+<a shiro:hasRole="admin" class="btn btn-sm btn-primary" th:href="@{'/emp/'+${emp.id}}">编辑</a>
+<a shiro:hasRole="admin" class="btn btn-sm btn-danger" th:href="@{'/delete/'+${emp.id}}">删除</a>
+```
+这里保留一个添加按钮，用来测试401页面。
+
+4.效果
+<div align=center><img src="https://s1.ax1x.com/2020/05/26/ti7Fds.png"/></div>
+
 ### To Do
 1.认证的MD5的盐值加密
 
-2.Shiro整合thymeleaf：要是身份是user的话，添加、编辑、删除 按钮就根本不应该出现
