@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <!-- saved from url=(0052)http://getbootstrap.com/docs/4.0/examples/dashboard/ -->
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--导入shiro的命名空间-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
 
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -53,7 +55,7 @@
 				<div th:replace="~{commons/commons::sidebar(isActive='list.html')}"></div>
 
 				<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
-					<h2><a class="btn btn-sm btn-success" th:href="@{/emp}">添加员工</a></h2>
+					<h2><a shiro:hasRole="admin" class="btn btn-sm btn-success" th:href="@{/emp}">添加员工</a></h2>
 					<div class="table-responsive">
 						<table class="table table-striped table-sm">
                             <!--表头-->
@@ -79,8 +81,8 @@
 								<td th:text="${#dates.format(emp.getBirth(),'yyyy-MM-dd HH:mm:ss')}"></td>
 								<td>
                                     <!--注意这里怎么取值的？！！！-->
-									<a class="btn btn-sm btn-primary" th:href="@{'/emp/'+${emp.id}}">编辑</a>
-									<a class="btn btn-sm btn-danger" th:href="@{'/delete/'+${emp.id}}">删除</a>
+									<a shiro:hasRole="admin" class="btn btn-sm btn-primary" th:href="@{'/emp/'+${emp.id}}">编辑</a>
+									<a shiro:hasRole="admin" class="btn btn-sm btn-danger" th:href="@{'/delete/'+${emp.id}}">删除</a>
 								</td>
 							</tr>
 							</tbody>
