@@ -21,7 +21,7 @@ public class UserRealm extends AuthorizingRealm {
     //授权
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
-        System.out.println("执行了授权方法:doGetAuthorizationInfo");
+        //System.out.println("执行了授权方法:doGetAuthorizationInfo");
 
         //SimpleAuthorizationInfo
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
@@ -44,7 +44,7 @@ public class UserRealm extends AuthorizingRealm {
     //认证
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-        System.out.println("执行了认证方法:AuthenticationInfo");
+        //System.out.println("执行了认证方法:AuthenticationInfo");
         //用户名，密码 从数据库中取
         UsernamePasswordToken userToken = (UsernamePasswordToken) token;
         //仅根据用户名取用户

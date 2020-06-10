@@ -12,6 +12,8 @@ public class DepartmentServiceImpl implements DepartmentService{
 
     @Autowired
     private DepartmentMapper departmentMapper;
+
+
     @Override
     public List<Department> selectAllDepartment() {
         return departmentMapper.selectAllDepartment();

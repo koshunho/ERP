@@ -3,6 +3,9 @@ package com.huang.mapper;
 import com.huang.pojo.Employee;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,9 +14,11 @@ import java.util.List;
 @Repository
 public interface EmployeeMapper {
     //查询全部员工信息
+
     List<Employee> selectAllEmployee();
 
     //根据id查询员工信息
+
     Employee selectEmployeeById(@Param("id") int id);
 
     //添加一个员工信息
