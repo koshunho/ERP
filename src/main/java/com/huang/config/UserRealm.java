@@ -9,10 +9,12 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
+
 import java.util.HashSet;
-import java.util.Set;
+
 
 
 public class UserRealm extends AuthorizingRealm {
@@ -41,11 +43,15 @@ public class UserRealm extends AuthorizingRealm {
         return info;
     }
 
+
     //认证
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
         //System.out.println("执行了认证方法:AuthenticationInfo");
         //用户名，密码 从数据库中取
+
+        //userToken从LoginController中取
+        // UsernamePasswordToken对象用来存放提交的登录信息
         UsernamePasswordToken userToken = (UsernamePasswordToken) token;
         //仅根据用户名取用户
         User user = userService.selectUserByShiro(userToken.getUsername());
@@ -54,6 +60,18 @@ public class UserRealm extends AuthorizingRealm {
             return null;
         }
         //shiro帮做密码认证
-        return new SimpleAuthenticationInfo(user,user.getPassword(),"");
+
+        // 根据用户的情况，来构建AuthenticationInfo对象并返回，通常使用的实现类为SimpleAuthenticationInfo
+        // 以下信息从数据库中获取
+        // （1）principal：认证的实体信息，可以是email，也可以是数据表对应的用户的实体类对象
+        Object principal = user;
+        // （2）credentials：密码
+        Object credentials = user.getPassword();
+        // （3）realmName：当前realm对象的name，调用父类的getName()方法即可
+        String realmName = getName();
+        // （4）盐值：取用户信息中唯一的字段来生成盐值，避免由于两个用户原始密码相同，加密后的密码也相同
+        ByteSource credentialsSalt = ByteSource.Util.bytes(user.getUsername());
+        return new SimpleAuthenticationInfo(principal, credentials, credentialsSalt,
+                realmName);
     }
 }

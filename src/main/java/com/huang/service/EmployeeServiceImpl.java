@@ -5,6 +5,7 @@ import com.huang.pojo.Employee;
 import com.huang.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -56,7 +57,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public int addEmployee(Employee employee) {
-        return employeeMapper.addEmployee(employee);
+        int ret = employeeMapper.addEmployee(employee);
+
+        redisUtil.del("allEmployee");
+        System.out.println("新增:从redis中删除了全部的Employee");
+
+        return ret;
     }
 
     @Override
@@ -80,12 +86,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         String key = "Employee" + id;
 
-        boolean hasKey = redisUtil.hasKey(key);
+        redisUtil.del(key,"allEmployee");
 
-        if(hasKey){
-            redisUtil.del(key,"allEmployee");
-            System.out.println("删除:从redis中删除了全部的Employee");
-        }
+        System.out.println("删除:从redis中删除了全部的Employee");
+
         return ret;
     }
 }
