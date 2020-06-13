@@ -29,4 +29,6 @@ public interface EmployeeMapper {
 
     //根据id删除员工信息
     int deleteEmployee(@Param("id") int id);
+
+    List<Integer> getAllEmployeesId();
 }

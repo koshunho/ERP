@@ -60,14 +60,15 @@ class Springboot01HelloworldApplicationTests {
     public void test3(){
         Department department = departmentService.selectDepartmentById(1);
         Employee employee = new Employee();
-        //employee.setId(6);
         employee.setLastName("fuckyou");
         employee.setEmail("123@qq.com");
         employee.setGender(1);
         employee.setDepartment(department);
         Date date = new Date(2020-02-02);
         employee.setBirth(date);
+        System.out.println("插入前id:"+employee.getId());
         employeeService.addEmployee(employee);
+        System.out.println("插入后id:"+employee.getId());
     }
 
     @Test
@@ -97,4 +98,14 @@ class Springboot01HelloworldApplicationTests {
     public void test7(){
         System.out.println(userService.selectUserByShiro("admin"));
     }
+
+
+    @Test
+    public void test8(){
+        List<Integer> allEmployeesId = employeeService.getAllEmployeesId();
+        for(Integer i:allEmployeesId){
+            System.out.println(i);
+        }
+    }
+
 }

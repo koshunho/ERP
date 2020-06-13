@@ -1,5 +1,5 @@
 # ERP
-整合了Redis，实现盐加密
+整合了Redis，实现盐加密。 添加了布隆过滤器
 
 ### 总结
 
@@ -297,3 +297,112 @@ public class MD5_generator {
     }
 }
 ```
+-------
+#### 布隆过滤器
+原理就不多说了，直接看怎么配置。
+
+由于不是数学家（笑い），所以直接使用了咕噜的guava包。
+```xml
+        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>29.0-jre</version>
+        </dependency>
+```
+
+##### 1.预热
+当Spring启动后，就初始化布隆过滤器。它需要从数据库中先加载所有的用户ID
+```java
+@Component
+public class BloomFilterInit implements ApplicationRunner {
+
+    private BloomFilter bloomFilter;
+
+    @Autowired
+    private EmployeeMapper employeeMapper;
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        List<Integer> list = employeeMapper.getAllEmployeesId();
+        if(list.size()>0){
+            bloomFilter=bloomFilter.create(Funnels.integerFunnel(),list.size(),0.01);
+            for(int i = 0; i < list.size(); i++){
+                bloomFilter.put(list.get(i));
+            }
+            System.out.println("预热employeesId到布隆过滤器成功！");
+        }
+    }
+
+    public BloomFilter getIntegerBloomFilter(){
+        return bloomFilter;
+    }
+}
+```
+
+##### 2.在Service中调用
+```java
+@Service
+public class EmployeeServiceImpl implements EmployeeService {
+
+    @Autowired
+    private EmployeeMapper employeeMapper;
+
+    @Resource
+    private RedisUtil redisUtil;
+
+    @Autowired
+    private BloomFilterInit bloomFilterInit;
+    
+    //省略。。。。。。。。
+
+    @Override
+    public Employee selectEmployeeById(int id) {
+        String key = "Employee" + id;
+
+        if(!bloomFilterInit.getIntegerBloomFilter().mightContain(id)){
+            System.out.println("该EmployeeId在布隆过滤器中不存在！");
+            return null;
+        }
+        Employee redisEmployee = (Employee) redisUtil.get(key);
+        if(redisEmployee!=null){
+            System.out.println("从redis中返回数据！");
+            return redisEmployee;
+        }
+        System.out.println("从DB中返回数据！");
+        Employee dbEmployee = employeeMapper.selectEmployeeById(id);
+        if(dbEmployee!=null){
+            System.out.println("将数据缓存到Redis中！");
+            redisUtil.set(key, dbEmployee);
+        }
+        return dbEmployee;
+    }
+
+
+    @Override
+    public int addEmployee(Employee employee) {
+        int ret = employeeMapper.addEmployee(employee);
+
+        redisUtil.del("allEmployee");
+        System.out.println("新增:从redis中删除了全部的Employee");
+
+        bloomFilterInit.getIntegerBloomFilter().put(employee.getId());  //注意这里
+        return ret;
+    }
+}
+```
+
+##### 注意点
+1. 在Service层addEmployee的时候，这时候的对象是没有ID的，因为存入数据库的时候ID自增。
+    
+    而我这时候需要把当前对象的ID设置进布隆过滤器。原本是像再从数据库中取出这个对象，想了想感觉就是脱裤子放屁了。
+    
+    解决办法：在mapper.xml中
+    ```xml
+    <!--需求：使用MyBatis往MySQL数据库中插入一条记录后，需要返回该条记录的自增主键值。-->
+    <!--“useGeneratedKeys”和“keyProperty”必须添加，而且keyProperty一定得和java对象的属性名称一直，而不是表格的字段名-->
+    <insert id="addEmployee" useGeneratedKeys="true" keyProperty="id" parameterType="employee">
+        insert into springboot.employee (lastName,email,gender,departmentId,birth)
+        values (#{lastName},#{email},#{gender},#{department.id},#{birth})
+    </insert>
+    ```

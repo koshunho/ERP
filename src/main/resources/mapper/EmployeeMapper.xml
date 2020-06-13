@@ -25,7 +25,9 @@
         select * from springboot.employee where id = #{id}
     </select>
 
-    <insert id="addEmployee" parameterType="employee">
+    <!--需求：使用MyBatis往MySQL数据库中插入一条记录后，需要返回该条记录的自增主键值。-->
+    <!--“useGeneratedKeys”和“keyProperty”必须添加，而且keyProperty一定得和java对象的属性名称一直，而不是表格的字段名-->
+    <insert id="addEmployee" useGeneratedKeys="true" keyProperty="id" parameterType="employee">
         insert into springboot.employee (lastName,email,gender,departmentId,birth)
         values (#{lastName},#{email},#{gender},#{department.id},#{birth})
     </insert>
@@ -39,4 +41,8 @@
     <delete id="deleteEmployee">
         delete from springboot.employee where id = #{id}
     </delete>
+
+    <select id="getAllEmployeesId" resultType="int">
+        select id from springboot.employee
+    </select>
 </mapper>

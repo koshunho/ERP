@@ -20,4 +20,6 @@ public interface EmployeeService {
 
     //根据id删除员工信息
     int deleteEmployee(int id);
+
+    List<Integer> getAllEmployeesId();
 }

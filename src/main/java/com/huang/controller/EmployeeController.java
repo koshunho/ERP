@@ -48,6 +48,9 @@ public class EmployeeController {
     public String toUpdateEmp(@PathVariable("id")Integer id,Model model){
 
         Employee employee = employeeService.selectEmployeeById(id);
+        if(employee == null){
+            return "error/notexist";
+        }
         model.addAttribute("emp",employee);
 
         Collection<Department> departments = departmentService.selectAllDepartment();
